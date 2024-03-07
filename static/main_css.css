@@ -1,0 +1,45 @@
+body {
+    font-family:    "Hind Madurai", Verdana, Geneva, Tahoma, sans-serif;
+    color:          #3c383a;
+    background-color: #f0ebd8;
+    max-width: 1080px;
+    margin: auto;
+    border: 1px solid;
+    text-align: center;
+}
+
+h1 {
+    font-family: "Josefin Sans";
+}
+
+tr:hover {
+    background-color: #bffbc0;
+}
+
+td {
+    padding:    3px;
+    margin:     0px 3px;
+    max-width:  70px;
+}
+
+td:hover {
+    background-color: #ffa800;
+}
+
+table {
+    text-align: center;
+    margin: auto;
+    margin-bottom: 5px;
+}
+
+th {
+    padding: 1px 2px;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+    max-width: 300px;
+    margin: auto;
+    margin-bottom: 25px;
+}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>Spools</h1>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Line #</th>
+            <th>Drawing #</th>
+            <th>Revision #</th>
+            <th>Line Spec</th>
+            <th>Spool</th>
+            <th>Drawing Issued</th>
+            <th>Welded Date</th>
+            <th>NDE Date</th>
+            <th>PWHT Date</th>
+            <th>Hydro Date</th>
+        </tr>
+        <!-- for loop iterates through first list in table data, rows is not only the index but also a list itself -->
+        {% for rows in table_data %}                  
+        <tr>
+            <!-- loop over each cell in the second list in table data, since rows is its own list I can do that-->
+            {% for cell in rows %}
+            <td> {{ cell }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

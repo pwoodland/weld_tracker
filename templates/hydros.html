@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>Hydros</h1>
+    <table>
+        <!-- for loop iterates through first list in table data, rows is not only the index but also a list itself -->
+        {% for rows in table_data %}                  
+        <tr>
+            <!-- loop over each cell in the second list in table data, since rows is its own list I can do that-->
+            {% for cell in rows %}
+            <td> {{ cell }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
+{% endblock %}
