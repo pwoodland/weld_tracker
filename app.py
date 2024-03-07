@@ -9,9 +9,9 @@ from forms import NewWeldForm, CommentForm                                      
 app = Flask(__name__)                                                                   # create the app Flask object
 app.config["SECRET_KEY"] = "not_so_secret"                                              # something I have to do to protect my app
 
-#new_welds = []
-comments = []                                                                           # simple list to hold comments for testing
 
+comments = []                                                                           # simple list to hold comments for testing
+new_welds = []                                                                          # creating list for storing new weld data
 
 @app.route('/', methods=["GET", "POST"])                                                                         # main route for the home page
 def index():
@@ -20,38 +20,34 @@ def index():
 @app.route('/welds', methods=["GET", "POST"])                                           # adding the post method to be able to send data back to server
 def welds():
     #create an instance of the new weld form
- #   new_weld_form = NewWeldForm()
+    new_weld_form = NewWeldForm()
     
     # NEED TO WORK ON THIS TO GET INFO INTO THE LIST
- #   if new_weld_form.validate_on_submit():
- #           new_weld_data = [
- #           new_weld_form.new_weld_spool.data,
- #           new_weld_form.new_weld_weld.data,
- #           new_weld_form.new_weld_size.data,
- #           new_weld_form.new_weld_thick.data,
- #           new_weld_form.new_weld_type.data,
- #           new_weld_form.new_weld_welder.data,
- #           new_weld_form.new_weld_weld_date.data,
- #           new_weld_form.new_weld_vt.data,
- #           new_weld_form.new_weld_vt_date.data,
- #           new_weld_form.new_weld_nde_number.data,
- #           new_weld_form.new_weld_nde_date.data
- #       ]
- #       new_welds.append(new_weld_data)
- #       new_welds.append(new_weld_form.new_weld_spool.data)
- #   print(new_welds)
-    new_weld = NewWeldForm()
+    if new_weld_form.validate_on_submit():          
+        #new_weld_form.new_weld_spool.data
+        #new_weld_form.new_weld_weld.data
+        #new_weld_form.new_weld_size.data
+        #new_weld_form.new_weld_thick.data
+        #new_weld_form.new_weld_type.data
+        #new_weld_form.new_weld_welder.data
+        #new_weld_form.new_weld_weld_date.data
+        #new_weld_form.new_weld_vt.data
+        #new_weld_form.new_weld_vt_date.data
+        #new_weld_form.new_weld_nde_number.data
+        #new_weld_form.new_weld_nde_date.data
+    
+        # ONLY WORKS OUTSIDE OF IF STATEMENT, same as "tutorial" code but the tutorial one works inside the if statement
+        new_spool = new_weld_form.new_weld_spool.data
+        new_welds.append(new_spool)
+    print(new_welds)
      # forms tutorial related stuff
-    welds_comment = CommentForm()                                                       # creating an instance of CommentForm called welds_comment                                        
-    new_comment = welds_comment.comment.data                                            # storing the input data into a variable
-    comments.append(new_comment)                                                        # adding to global comments list 
+    welds_comment = CommentForm()                                                       # creating an instance of CommentForm called welds_comment
+    if welds_comment.validate_on_submit():                                        
+        new_comment = welds_comment.comment.data                                            # storing the input data into a variable
+        comments.append(new_comment)                                                        # adding to global comments list 
     print(comments)                                                                     # print comments to see if I am getting inputs
     # forms tutorial related stuff done
-    return render_template("welds.html", table_data = welds_data, comment_form = welds_comment, new_weld=new_weld) # new_weld is just template variable, not the new_weld list from above if statement
-
-
-
-
+    return render_template("welds.html", table_data = welds_data, comment_form = welds_comment, new_weld = new_weld_form) # new_weld is just template variable, not the new_weld list from above if statement
 
 
 @app.route('/spools')
