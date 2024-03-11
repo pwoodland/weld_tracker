@@ -23,7 +23,8 @@ def welds():
     new_weld_form = NewWeldForm()
     
     # NEED TO WORK ON THIS TO GET INFO INTO THE LIST
-    if new_weld_form.validate_on_submit():          
+    if new_weld_form.validate_on_submit():
+        print("if statement true")          
         #new_weld_form.new_weld_spool.data
         #new_weld_form.new_weld_weld.data
         #new_weld_form.new_weld_size.data
@@ -37,8 +38,12 @@ def welds():
         #new_weld_form.new_weld_nde_date.data
     
         # ONLY WORKS OUTSIDE OF IF STATEMENT, same as "tutorial" code but the tutorial one works inside the if statement
+        # its because the date fields are causing validate_on_submit to return false
         new_spool = new_weld_form.new_weld_spool.data
         new_welds.append(new_spool)
+    else:
+        print("if statement not true")
+    print(new_weld_form.new_weld_vt_date)
     print(new_welds)
      # forms tutorial related stuff
     welds_comment = CommentForm()                                                       # creating an instance of CommentForm called welds_comment
