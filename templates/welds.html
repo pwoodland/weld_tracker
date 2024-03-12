@@ -26,7 +26,7 @@
             {% endfor %}
         </tr>
         {% endfor %}
-<!--        <form method="POST">
+        <form method="POST">
         {{ new_weld.hidden_tag() }}
         <tr>
             <td>Add</td>
@@ -43,18 +43,11 @@
             <td>{{ new_weld.new_weld_nde_date() }}</td>
         </tr>
         <tr>
-            {{ new_weld.submit() }}
+            <td>{{ new_weld.submit() }}</td>
         </tr>            
         </form>
--->
+
 
     </table>
-    <form method="POST">
-        {{ comment_form.hidden_tag() }}
-        {{ comment_form.comment.label }}
-        {{ comment_form.comment() }}
-        {{ comment_form.submit() }}
-    </form>
-
     
 {% endblock %}
