@@ -17,6 +17,3 @@ class NewWeldForm(FlaskForm):
     
     submit = SubmitField("Submit weld")
 
-class CommentForm(FlaskForm):
-    comment = StringField("Comment")
-    submit = SubmitField("Submit comment")

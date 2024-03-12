@@ -1,10 +1,12 @@
 from flask import Flask                                                                 # import the Flask class from the flask module
 from flask import render_template                                                       # import render_template function
 from flask import request                                                               # import the request object to be able to get form data
+from flask import redirect
+from flask import url_for
 from flask_wtf import FlaskForm                                                         # import the FlaskForm class to create and use forms
 from wtforms import StringField, SubmitField                                            # import some basic form objects
 import psycopg2                                                                         # import psycopg2 - how I connect and interact with postgresql
-from forms import NewWeldForm, CommentForm                                              # import NewWeldForm, CommentForm <-- for testing
+from forms import NewWeldForm                                                           # import NewWeldForm, CommentForm <-- for testing
 
 app = Flask(__name__)                                                                   # create the app Flask object
 app.config["SECRET_KEY"] = "not_so_secret"                                              # something I have to do to protect my app
@@ -22,38 +24,41 @@ def welds():
     #create an instance of the new weld form
     new_weld_form = NewWeldForm()
     
-    # NEED TO WORK ON THIS TO GET INFO INTO THE LIST
-    if new_weld_form.validate_on_submit():
-        print("if statement true")          
-        #new_weld_form.new_weld_spool.data
-        #new_weld_form.new_weld_weld.data
-        #new_weld_form.new_weld_size.data
-        #new_weld_form.new_weld_thick.data
-        #new_weld_form.new_weld_type.data
-        #new_weld_form.new_weld_welder.data
-        #new_weld_form.new_weld_weld_date.data
-        #new_weld_form.new_weld_vt.data
-        #new_weld_form.new_weld_vt_date.data
-        #new_weld_form.new_weld_nde_number.data
-        #new_weld_form.new_weld_nde_date.data
-    
-        # ONLY WORKS OUTSIDE OF IF STATEMENT, same as "tutorial" code but the tutorial one works inside the if statement
-        # its because the date fields are causing validate_on_submit to return false
-        new_spool = new_weld_form.new_weld_spool.data
-        new_welds.append(new_spool)
-    else:
-        print("if statement not true")
-    print(new_weld_form.new_weld_vt_date)
-    print(new_welds)
-     # forms tutorial related stuff
-    welds_comment = CommentForm()                                                       # creating an instance of CommentForm called welds_comment
-    if welds_comment.validate_on_submit():                                        
-        new_comment = welds_comment.comment.data                                            # storing the input data into a variable
-        comments.append(new_comment)                                                        # adding to global comments list 
-    print(comments)                                                                     # print comments to see if I am getting inputs
-    # forms tutorial related stuff done
-    return render_template("welds.html", table_data = welds_data, comment_form = welds_comment, new_weld = new_weld_form) # new_weld is just template variable, not the new_weld list from above if statement
+    # Need to add database connection and data pull to the route so its updated everytime the route gets loaded
+    if new_weld_form.validate_on_submit():    
+        spool = new_weld_form.new_weld_spool.data.upper()
+        weld = new_weld_form.new_weld_weld.data.upper()
+        size = new_weld_form.new_weld_size.data
+        schedule = new_weld_form.new_weld_thick.data.upper()
+        type = new_weld_form.new_weld_type.data.upper()
+        welder = new_weld_form.new_weld_welder.data
+        weld_date = new_weld_form.new_weld_weld_date.data
+        vt = new_weld_form.new_weld_vt.data
+        vt_date = new_weld_form.new_weld_vt_date.data
+        nde_number = new_weld_form.new_weld_nde_number.data
+        nde_date = new_weld_form.new_weld_nde_date.data
+        
+        con = psycopg2.connect(
+        database="weld_tracker",    # this is my weld tracker database
+        user="postgres",            # this the connection username
+        password="postgres",        # this is connection password
+        host="localhost",           # this is my defaul host, localhost
+        port="5432"                 # PostgreSQL 16 server is set to port 5432
+        )
+        cursor_obj = con.cursor()  
+        cursor_obj.execute("""
+                    INSERT INTO welds (spool_number, weld_id, weld_size, weld_schedule, weld_type, welder, date_welded, vt, vt_date, nde_number, nde_date)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """, (spool, weld, size, schedule, type, welder, weld_date, vt, vt_date, nde_number, nde_date))
+        con.commit()
+        cursor_obj.close()              # responsibly closing the cursoer
+        con.close()                     # as well as the connection
 
+        
+        print(spool, weld, size, schedule, type, welder, weld_date, vt, vt_date, nde_number, nde_date)
+        return redirect(url_for('welds'))
+
+    return render_template("welds.html", table_data = welds_data, new_weld = new_weld_form) # new_weld is template variable to be used in template
 
 @app.route('/spools')
 def spools():
@@ -63,6 +68,8 @@ def spools():
 def hydros():
     return render_template("hydros.html", table_data = hydros_data)
 
+### Basic database connection stuff
+### need to connect at each route or else the updated information doesn't get rendered
 
 # establish the connection using the connect() function of psycopg2 module
 con = psycopg2.connect(
