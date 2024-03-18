@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
+    <script src="static/main.js" defer></script>
     <h1>Welds</h1>
     <table>
         <tr>
@@ -22,7 +23,7 @@
         <tr>
             <!-- loop over each cell in the second list in table data, since rows is its own list I can do that-->
             {% for cell in rows %}
-            <td> {{ cell }}</td>
+            <td contenteditable="true" class="editable"> {{ cell }}</td>
             {% endfor %}
         </tr>
         {% endfor %}
