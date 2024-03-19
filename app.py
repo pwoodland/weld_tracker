@@ -1,11 +1,4 @@
-from flask import Flask                                                                 # import the Flask class from the flask module
-from flask import render_template                                                       # import render_template function
-from flask import request                                                               # import the request object to be able to get form data
-from flask import redirect
-from flask import url_for
-from flask import jsonify
-from flask_wtf import FlaskForm                                                         # import the FlaskForm class to create and use forms
-from wtforms import StringField, SubmitField                                            # import some basic form objects
+from flask import Flask, render_template, request, redirect, url_for, jsonify           # import the Flask class from the flask module
 import psycopg2                                                                         # import psycopg2 - how I connect and interact with postgresql
 from forms import NewWeldForm                                                           # import NewWeldForm, CommentForm <-- for testing
 from datetime import datetime
@@ -78,8 +71,6 @@ def welds():
         cursor_obj.close()              # responsibly closing the cursoer
         con.close()                     # as well as the connection
 
-        
-        print(spool, weld, size, schedule, type, welder, weld_date, vt, vt_date, nde_number, nde_date)
         return redirect(url_for('welds'))
     cursor_obj.close()              # responsibly closing the cursoer
     con.close()                     # as well as the connection
@@ -179,6 +170,3 @@ hydros_data = cursor_obj.fetchall()
 
 cursor_obj.close()              # responsibly closing the cursoer
 con.close()                     # as well as the connection
-
-
-
