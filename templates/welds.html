@@ -2,6 +2,7 @@
 {% block content %}
     <script src="static/main.js" defer></script>
     <h1>Welds</h1>
+    <button id="lock">Unlock data</button>
     <table>
         <tr>
             <th>ID</th>
@@ -23,7 +24,7 @@
         <tr>
             <!-- loop over each cell in the second list in table data, since rows is its own list I can do that-->
             {% for cell in rows %}
-            <td contenteditable="true" class="editable"> {{ cell }}</td>
+            <td contenteditable="false" class="editable"> {{ cell }}</td>
             {% endfor %}
         </tr>
         {% endfor %}
@@ -44,6 +45,7 @@
             <td>{{ new_weld.new_weld_nde_date() }}</td>
         </tr>
         <tr>
+            <td>blank</td>
             <td>{{ new_weld.submit() }}</td>
         </tr>            
         </form>
