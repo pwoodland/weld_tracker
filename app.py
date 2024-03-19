@@ -1,24 +1,36 @@
+##################################################
+### V0.05 UPDATED WELDS VIEW TO USE SQLALCHEMY ###
+### NEXT UP: UPDATE SPOOLS AND HYDROS TABLE TO USE SQL ALCHEMY
+##################################################
+
 from flask import Flask, render_template, request, redirect, url_for, jsonify           # import the Flask class from the flask module
 import psycopg2                                                                         # import psycopg2 - how I connect and interact with postgresql
 from forms import NewWeldForm                                                           # import NewWeldForm, CommentForm <-- for testing
 from datetime import datetime
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import select
 
 
-#####################################
-### INITIALIZE APP AND DB OBJECTS ###
-#####################################
+###############################################
+###     INITIALIZE APP AND DB OBJECTS       ###
+###############################################
+
 
 app = Flask(__name__)                                                                   # create the app Flask object
 app.config["SECRET_KEY"] = "not_so_secret"                                              # something I have to do to protect my app
-app.config["SQLALCHEMY_DATABASE_URI"] = 'postgresql://postgres:postgres@localhost:5432/weld_tracker' 
+
+#######################
+### SQLALCHEMY INIT ###
+#######################
+app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://postgres:postgres@localhost:5432/weld_tracker"
 db = SQLAlchemy(app)
 
-###############################
-### CREATING DATABSE MODELS ###
-###############################
+###############################################
+###           DATABASE MODELS               ###
+###############################################
 
-class Spools(db.Model):                                                                                         # creating a Spools sub-class of the db.Model class
-    id = db.Column(db.Integer, primary_key = True)                                                              # primary key column
+class Spools(db.Model):                                                                                        
+    id = db.Column(db.Integer, primary_key = True)                                                              
     line_number = db.Column(db.String(80), index = True, unique = False)
     drawing_number = db.Column(db.String(80), index = True, unique = False)
     revision_number = db.Column(db.String(5), index = True, unique = False)
@@ -56,7 +68,9 @@ class Hydros(db.Model):
     test_pressure_min = db.Column(db.String(100))
     test_pressure_max = db.Column(db.String(100))
 
-
+###############################################
+###   some connection managment functions   ###
+###############################################
 
 def connection():
     return psycopg2.connect(
@@ -67,60 +81,14 @@ def connection():
     port="5432"                 # PostgreSQL 16 server is set to port 5432
     )
 
-@app.route('/', methods=["GET", "POST"])                                                                         # main route for the home page
-def index():
-    return render_template("index.html")
+def end_con(cursor, connection):
+    cursor.close()
+    connection.close()
 
-@app.route('/welds', methods=["GET", "POST"])                                           # adding the post method to be able to send data back to server
-def welds():
-    #create an instance of the new weld form
-    new_weld_form = NewWeldForm()
-
-    # establish connection and pull weld data
-    con = connection()
-    cur = con.cursor()                                  # creating a cursor object so I can use the functions in the class
-    cur.execute("SELECT * FROM welds ORDER BY id;")     # using the execute function to execute an SQL command
-    welds_data = cur.fetchall()                         # fetching all the records and saving into a variable called result
-
-    if new_weld_form.validate_on_submit():    
-        spool = new_weld_form.new_weld_spool.data.upper()
-        weld = new_weld_form.new_weld_weld.data.upper()
-        size = new_weld_form.new_weld_size.data
-        schedule = new_weld_form.new_weld_thick.data.upper()
-        type = new_weld_form.new_weld_type.data.upper()
-        # keep welder as None if empty string
-        if new_weld_form.new_weld_welder.data == "":
-            welder = None
-        else:
-            welder = new_weld_form.new_weld_welder.data
-        weld_date = new_weld_form.new_weld_weld_date.data
-        if new_weld_form.new_weld_vt.data == "":
-            vt = None
-        else:
-            vt = new_weld_form.new_weld_vt.data
-        vt_date = new_weld_form.new_weld_vt_date.data
-        if new_weld_form.new_weld_nde_number.data == "":
-            nde_number = None
-        else:
-            nde_number = new_weld_form.new_weld_nde_number.data
-        nde_date = new_weld_form.new_weld_nde_date.data
-        
-        con = connection()
-        cur = con.cursor()  
-        cur.execute("""
-                    INSERT INTO welds (spool_number, weld_id, weld_size, weld_schedule, weld_type, welder, welded_date, vt, vt_date, nde_number, nde_date)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    """, (spool, weld, size, schedule, type, welder, weld_date, vt, vt_date, nde_number, nde_date))
-        con.commit()
-        cur.close()              # responsibly closing the cursoer
-        con.close()              # as well as the connection
-
-        return redirect(url_for('welds'))
-    cur.close()              # responsibly closing the cursoer
-    con.close()              # as well as the connection
-
-    return render_template("welds.html", table_data = welds_data, new_weld = new_weld_form) # new_weld is template variable to be used in template
-
+##############################################
+### data processing functions             #### 
+##############################################
+    
 def checkIfNone(toCheck):
     if toCheck == "None" or toCheck == "none":
         return None
@@ -150,53 +118,111 @@ def listToEntity(listOfStrings):
     }
     return entity
 
-### START OF UPDATE WELDS 
-@app.route('/welds/edit', methods=["POST"])
-def updateWelds():
-    # get data from server
-    request_data = request.get_json()
-    # split it into a list
-    listed_data = request_data.split()
-    # convert to a dict
-    dicted_data = listToEntity(listed_data)
-  
-    # establish the connection using the connect() function of psycopg2 module
-    con = connection()
-    cur = con.cursor()                           # creating a cursor object so I can use the functions (primarily execute) in the class
-    # USE THE CURSOR TO EXECUTE SOME SQL
-    cur.execute("""UPDATE welds
-                       SET spool_number = %s, weld_id = %s, weld_size = %s, weld_schedule = %s, weld_type = %s, welder = %s, welded_date = %s, vt = %s,
-                       vt_date = %s, nde_number = %s, nde_date = %s
-                       WHERE id = %s;
-                       """, (dicted_data["spool"], dicted_data["weld"], dicted_data["size"], dicted_data["thick"], dicted_data["type"], dicted_data["welder"], 
-                             dicted_data["weld_date"], dicted_data["vt"], dicted_data["vt_date"], dicted_data["nde_number"], dicted_data["nde_date"], dicted_data["id"]))
-    con.commit()             # commit data to DB
-    cur.close()              # responsibly closing the cursoer
-    con.close()              # as well as the connection
+############################################################################################################################################################
+###############################################
+###             MAIN ROUTES                 ###
+###############################################
 
-    return jsonify("Post request worked!")
+### INDEX ###    
+@app.route('/', methods=["GET", "POST"])                                                                         # main route for the home page
+def index():
+    return render_template("index.html")
 
+### WELDS ###
+@app.route('/welds', methods=["GET", "POST"])                                           # adding the post method to be able to send data back to server
+def welds():
+    #create an instance of the new weld form
+    new_weld_form = NewWeldForm()
+
+    ### gets all the records using Flask-SQLAlchemy
+    welds_data = db.session.execute(db.select(Welds).order_by(Welds.id)).scalars().all()
+
+    if new_weld_form.validate_on_submit():    
+        spool = new_weld_form.new_weld_spool.data.upper()
+        weld = new_weld_form.new_weld_weld.data.upper()
+        size = new_weld_form.new_weld_size.data
+        schedule = new_weld_form.new_weld_thick.data.upper()
+        type = new_weld_form.new_weld_type.data.upper()
+        # keep welder as None if empty string
+        if new_weld_form.new_weld_welder.data == "":
+            welder = None
+        else:
+            welder = new_weld_form.new_weld_welder.data
+        weld_date = new_weld_form.new_weld_weld_date.data
+        if new_weld_form.new_weld_vt.data == "":
+            vt = None
+        else:
+            vt = new_weld_form.new_weld_vt.data
+        vt_date = new_weld_form.new_weld_vt_date.data
+        if new_weld_form.new_weld_nde_number.data == "":
+            nde_number = None
+        else:
+            nde_number = new_weld_form.new_weld_nde_number.data
+        nde_date = new_weld_form.new_weld_nde_date.data
+        
+        #create a new weld record and add it to the database using Flask-SQLAlchemy
+        new_weld_data = Welds(
+            spool_number=spool, weld_id=weld, weld_size=size, weld_schedule=schedule, weld_type=type, welder=welder, welded_date=weld_date,
+            vt=vt, vt_date=vt_date, nde_number=nde_number, nde_date=nde_date
+        )
+        db.session.add(new_weld_data)
+        db.session.commit()
+
+        return redirect(url_for('welds'))
+ 
+    return render_template("welds.html", welds = welds_data, new_weld = new_weld_form) # new_weld is template variable to be used in template
+
+### SPOOLS ####
 @app.route('/spools')
 def spools():
+    con = connection()
+    cur = con.cursor()                         
+    cur.execute("SELECT * FROM spools;")
+    spools_data = cur.fetchall()
+    end_con(cur, con)
     return render_template("spools.html", table_data = spools_data)
 
+### HYDROS ###
 @app.route('/hydros')
 def hydros():
+    con = connection()
+    cur = con.cursor()
+    cur.execute("SELECT * FROM hydros;") 
+    hydros_data = cur.fetchall()
+    end_con(cur, con)
     return render_template("hydros.html", table_data = hydros_data)
 
-### Basic database connection stuff
-### need to connect at each route or else the updated information doesn't get rendered
 
-# establish the connection using the connect() function of psycopg2 module
-con = connection()
+###################################################
+### UPDATE WELDS ASYNC API ENPOINT              ###
+###################################################
+@app.route('/welds/edit', methods=["POST"])
+def updateWelds():
+    
+    request_data = request.get_json()                               # get data from server
+    listed_data = request_data.split()                              # split it into a list
+    dicted_data = listToEntity(listed_data)                         # convert to a dict
+    print(dicted_data)
 
-cur = con.cursor()                           # creating a cursor object so I can use the functions in the class
+    weld_to_update = db.session.execute(select(Welds).filter_by(id=dicted_data["id"])).scalar_one()
+    weld_to_update.spool_number = dicted_data["spool"]
+    weld_to_update.weld_id = dicted_data["weld"]
+    weld_to_update.weld_size = dicted_data["size"]
+    weld_to_update.weld_schedule = dicted_data["thick"]
+    weld_to_update.weld_type = dicted_data["type"]
+    weld_to_update.welder = dicted_data["welder"]
+    weld_to_update.welded_date = dicted_data["weld_date"]
+    weld_to_update.vt = dicted_data["vt"]
+    weld_to_update.vt_date = dicted_data["vt_date"]
+    weld_to_update.nde_number = dicted_data["nde_number"]
+    weld_to_update.nde_date = dicted_data["nde_date"]
 
-cur.execute("SELECT * FROM spools;")         # doing the same for spools
-spools_data = cur.fetchall()
+    db.session.commit()
+    db.session.flush()
 
-cur.execute("SELECT * FROM hydros;")         # and finally for hydros (currently no data in db)
-hydros_data = cur.fetchall()
+    return jsonify("Post request worked!") # give the front end something
 
-cur.close()              # responsibly closing the cursoer
-con.close()              # as well as the connection
+
+# Run development server locally                                              
+if __name__ == '__main__':
+    app.run(debug=True)

@@ -4,30 +4,41 @@
     <h1>Welds</h1>
     <button id="lock">Unlock data</button>
     <table>
-        <tr>
-            <th>ID</th>
-            <th>Spool</th>
-            <th>Weld</th>
-            <th>Size</th>
-            <th>Thick</th>
-            <th>Type</th>
-            <th>Welder</th>
-            <th>Welded Date</th>
-            <th>VT</th>
-            <th>VT Date</th>
-            <th>NDE #</th>
-            <th>NDE Date</th>
-        </tr>
-        
-        <!-- for loop iterates through first list in table data, rows is not only the index but also a list itself -->
-        {% for rows in table_data %}                  
-        <tr>
-            <!-- loop over each cell in the second list in table data, since rows is its own list I can do that-->
-            {% for cell in rows %}
-            <td contenteditable="false" class="editable"> {{ cell }}</td>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Spool</th>
+                <th>Weld</th>
+                <th>Size</th>
+                <th>Thick</th>
+                <th>Type</th>
+                <th>Welder</th>
+                <th>Welded Date</th>
+                <th>VT</th>
+                <th>VT Date</th>
+                <th>NDE #</th>
+                <th>NDE Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- for loop iterates through first list in table data, rows is not only the index but also a list itself -->
+            {% for weld in welds %}                  
+            <tr>        
+                <td contenteditable="false" class="editable"> {{ weld.id }}</td>
+                <td contenteditable="false" class="editable"> {{ weld.spool_number }}</td>
+                <td contenteditable="false" class="editable"> {{ weld.weld_id }}</td>
+                <td contenteditable="false" class="editable"> {{ weld.weld_size }}</td>
+                <td contenteditable="false" class="editable"> {{ weld.weld_schedule }}</td>
+                <td contenteditable="false" class="editable"> {{ weld.weld_type }}</td>
+                <td contenteditable="false" class="editable"> {{ weld.welder }}</td>
+                <td contenteditable="false" class="editable"> {{ weld.welded_date }}</td>
+                <td contenteditable="false" class="editable"> {{ weld.vt }}</td>
+                <td contenteditable="false" class="editable"> {{ weld.vt_date }}</td>
+                <td contenteditable="false" class="editable"> {{ weld.nde_number }}</td>
+                <td contenteditable="false" class="editable"> {{ weld.nde_date }}</td>
+            </tr>
             {% endfor %}
-        </tr>
-        {% endfor %}
+        </tbody>
         <form method="POST">
         {{ new_weld.hidden_tag() }}
         <tr>
