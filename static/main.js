@@ -1,4 +1,12 @@
-const tableCells = document.getElementsByClassName('editable'); // getting all the <td>s
+// hiding the first td in the table rows
+const tableRows = document.querySelectorAll("tr");
+// hide the first td cause its irrelevant
+for (let i = 0; i < tableRows.length; i++) {
+    tableRows[i].firstElementChild.style.display = "none";
+}
+
+// getting all the <td>s
+const tableCells = document.getElementsByClassName('editable'); 
 
 // adding the event listener to every td
 for (let i = 0; i < tableCells.length; i++) {
@@ -27,7 +35,7 @@ async function sendData() {
     }
 }
 
-// change the button text
+// change the button text and tds to be editable or uneditable
 function changeLock() {
     if (lockButton.innerHTML == "Lock data") {
         lockButton.innerHTML = "Unlock data";
@@ -42,7 +50,6 @@ function changeLock() {
     } else {
         console.log("Something wrong with changeLock function");
     }
-
 }
 
 // Create event listener for button click
