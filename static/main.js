@@ -26,3 +26,25 @@ async function sendData() {
         console.log(error);
     }
 }
+
+// change the button text
+function changeLock() {
+    if (lockButton.innerHTML == "Lock data") {
+        lockButton.innerHTML = "Unlock data";
+        for (let i = 0; i < tableCells.length; i++){
+            tableCells[i].setAttribute("contenteditable", "false");
+        }
+    } else if (lockButton.innerHTML == "Unlock data") {
+        lockButton.innerHTML = "Lock data";
+            for (let i = 0; i < tableCells.length; i++){
+                tableCells[i].setAttribute("contenteditable", "true");
+            }
+    } else {
+        console.log("Something wrong with changeLock function");
+    }
+
+}
+
+// Create event listener for button click
+const lockButton = document.getElementById('lock');
+lockButton.addEventListener('click', changeLock);
