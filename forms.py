@@ -17,3 +17,16 @@ class NewWeldForm(FlaskForm):
     
     submit = SubmitField("Submit weld")
 
+class NewSpoolForm(FlaskForm):
+    new_spool_line_number = StringField("line", validators=[Optional(), Length(max=200)])
+    new_spool_dwg_number = StringField("drawing", validators=[Optional(), Length(max=200)])
+    new_spool_rev_number = StringField("revision", validators=[Optional(), Length(max=10)])
+    new_spool_line_spec = StringField("spec", validators=[Optional(), Length(max=20)])
+    new_spool_spool = StringField("spool", validators=[DataRequired(), Length(max=20)])
+    new_spool_dwg_date = DateField("dwg_Date", validators=[Optional()])
+    new_spool_welded_date = DateField("weld_date", validators=[Optional()])
+    new_spool_nde_date = DateField("nde_date", validators=[Optional()])
+    new_spool_pwht_date = DateField("pwht_date", validators=[Optional()])
+    new_spool_hydro_date = DateField("hydro_date", validators=[Optional()])
+
+    submit = SubmitField("Submit spool")

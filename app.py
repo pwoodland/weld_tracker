@@ -5,7 +5,7 @@
 
 from flask import Flask, render_template, request, redirect, url_for, jsonify           # import the Flask class from the flask module
 import psycopg2                                                                         # import psycopg2 - how I connect and interact with postgresql
-from forms import NewWeldForm                                                           # import NewWeldForm, CommentForm <-- for testing
+from forms import NewWeldForm, NewSpoolForm                                             # import NewWeldForm, NewSpoolForm <-- for testing
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import select
@@ -100,8 +100,8 @@ def checkIfNoneDate(toCheck):
         return None
     else:
         return datetime.strptime(toCheck, "%Y-%m-%d").date()
-
-def listToEntity(listOfStrings):
+    
+def listToWeld(listOfStrings):
     entity = {
     "id": int(listOfStrings[0]),
     "spool": listOfStrings[1].upper(),
@@ -115,6 +115,22 @@ def listToEntity(listOfStrings):
     "vt_date": checkIfNoneDate(listOfStrings[9]),
     "nde_number": checkIfNone(listOfStrings[10]),
     "nde_date": checkIfNoneDate(listOfStrings[11])
+    }
+    return entity
+
+def listToSpool(listOfStrings):
+    entity = {
+    "id": int(listOfStrings[0]),
+    "line": listOfStrings[1].upper(),
+    "drawing": listOfStrings[2].upper(),
+    "revision": (listOfStrings[3]),
+    "spec": listOfStrings[4].upper(),
+    "spool": listOfStrings[5].upper(),
+    "dwg_date": checkIfNoneDate(listOfStrings[6]),
+    "weld_date": checkIfNoneDate(listOfStrings[7]),
+    "nde_date": checkIfNoneDate(listOfStrings[8]),
+    "pwht_date": checkIfNoneDate(listOfStrings[9]),
+    "hydro_date": checkIfNoneDate(listOfStrings[10])
     }
     return entity
 
@@ -173,15 +189,47 @@ def welds():
     return render_template("welds.html", welds = welds_data, new_weld = new_weld_form) # new_weld is template variable to be used in template
 
 ### SPOOLS ####
-@app.route('/spools')
+@app.route('/spools', methods=["GET", "POST"])
 def spools():
-    # con = connection()
-    # cur = con.cursor()                         
-    # cur.execute("SELECT * FROM spools;")
-    # spools_data = cur.fetchall()
-    # end_con(cur, con)
+    new_spool_form = NewSpoolForm()
     spools_data = db.session.execute(db.select(Spools).order_by(Spools.id)).scalars().all()
-    return render_template("spools.html", spools = spools_data)
+
+    if new_spool_form.validate_on_submit():
+        line_number = new_spool_form.new_spool_line_number.data.upper()
+        dwg_number = new_spool_form.new_spool_dwg_number.data.upper()
+        rev_number = new_spool_form.new_spool_rev_number.data.upper()
+        line_spec = new_spool_form.new_spool_line_spec.data.upper()
+        spool = new_spool_form.new_spool_spool.data.upper()
+        if new_spool_form.new_spool_dwg_date.data == "":
+            dwg_date = None
+        else:
+            dwg_date = new_spool_form.new_spool_dwg_date.data
+        if new_spool_form.new_spool_welded_date.data == "":
+            welded_date = None
+        else:
+            welded_date = new_spool_form.new_spool_welded_date.data
+        if new_spool_form.new_spool_nde_date.data == "":
+            nde_date = None
+        else:
+            nde_date = new_spool_form.new_spool_nde_date.data
+        if new_spool_form.new_spool_pwht_date.data == "":
+            pwht_date = None
+        else:
+            pwht_date = new_spool_form.new_spool_pwht_date.data
+        if new_spool_form.new_spool_hydro_date.data == "":
+            hydro_date = None
+        else:
+            hydro_date = new_spool_form.new_spool_hydro_date.data
+
+        new_spool_data = Spools(line_number=line_number, drawing_number=dwg_number, revision_number=rev_number, line_spec=line_spec, spool_number=spool,
+                                dwg_issued_date=dwg_date, welded_date=welded_date, nde_date=nde_date, pwht_date=pwht_date, hydro_date=hydro_date)
+
+        db.session.add(new_spool_data)
+        db.session.commit()
+
+        return redirect(url_for('spools'))
+
+    return render_template("spools.html", spools = spools_data, new_spool = new_spool_form)
 
 ### HYDROS ###
 @app.route('/hydros')
@@ -202,7 +250,7 @@ def updateWelds():
     
     request_data = request.get_json()                               # get data from server
     listed_data = request_data.split()                              # split it into a list
-    dicted_data = listToEntity(listed_data)                         # convert to a dict
+    dicted_data = listToWeld(listed_data)                           # convert to a dict
     print(dicted_data)
 
     weld_to_update = db.session.execute(select(Welds).filter_by(id=dicted_data["id"])).scalar_one()
@@ -223,6 +271,33 @@ def updateWelds():
 
     return jsonify("Post request worked!") # give the front end something
 
+########################################################
+### UPDATE SPOOLS ###
+#####################
+@app.route('/spools/edit', methods=["POST"])
+def updateSpools():
+
+    request_data = request.get_json()                               # get data from server
+    listed_data = request_data.split()                              # split it into a list
+    dicted_data = listToSpool(listed_data)                         # convert to a dict
+    print(dicted_data)
+
+    spool_to_update = db.session.execute(select(Spools).filter_by(id=dicted_data["id"])).scalar_one()
+    spool_to_update.line_number = dicted_data["line"]
+    spool_to_update.drawing_number = dicted_data["drawing"]
+    spool_to_update.revision_number = dicted_data["revision"]
+    spool_to_update.line_spec = dicted_data["spec"]
+    spool_to_update.spool_number = dicted_data["spool"]
+    spool_to_update.dwg_issued_date = dicted_data["dwg_date"]
+    spool_to_update.welded_date = dicted_data["nde_date"]
+    spool_to_update.nde_date = dicted_data["nde_date"]
+    spool_to_update.pwht_date = dicted_data["pwht_date"]
+    spool_to_update.hydro_date = dicted_data["hydro_date"]
+
+    db.session.commit()
+    db.session.flush()
+
+    return jsonify("Post request worked!")
 
 # Run development server locally                                              
 if __name__ == '__main__':
