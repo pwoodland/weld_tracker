@@ -2,27 +2,38 @@
 {% block content %}
     <h1>Spools</h1>
     <table>
-        <tr>
-            <th>ID</th>
-            <th>Line #</th>
-            <th>Drawing #</th>
-            <th>Revision #</th>
-            <th>Line Spec</th>
-            <th>Spool</th>
-            <th>Drawing Issued</th>
-            <th>Welded Date</th>
-            <th>NDE Date</th>
-            <th>PWHT Date</th>
-            <th>Hydro Date</th>
-        </tr>
-        <!-- for loop iterates through first list in table data, rows is not only the index but also a list itself -->
-        {% for rows in table_data %}                  
-        <tr>
-            <!-- loop over each cell in the second list in table data, since rows is its own list I can do that-->
-            {% for cell in rows %}
-            <td> {{ cell }}</td>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Line #</th>
+                <th>Drawing #</th>
+                <th>Revision #</th>
+                <th>Line Spec</th>
+                <th>Spool</th>
+                <th>Drawing Issued</th>
+                <th>Welded Date</th>
+                <th>NDE Date</th>
+                <th>PWHT Date</th>
+                <th>Hydro Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- for loop iterates through first list in table data, rows is not only the index but also a list itself -->
+            {% for spool in spools %}                  
+            <tr>
+                <td contenteditable="false" class="editable"> {{ spool.id }}</td>
+                <td contenteditable="false" class="editable"> {{ spool.line_number }}</td>
+                <td contenteditable="false" class="editable"> {{ spool.drawing_number }}</td>
+                <td contenteditable="false" class="editable"> {{ spool.revision_number }}</td>
+                <td contenteditable="false" class="editable"> {{ spool.line_spec }}</td>
+                <td contenteditable="false" class="editable"> {{ spool.spool_number }}</td>
+                <td contenteditable="false" class="editable"> {{ spool.dwg_issued_date }}</td>
+                <td contenteditable="false" class="editable"> {{ spool.welded_date }}</td>
+                <td contenteditable="false" class="editable"> {{ spool.nde_date }}</td>
+                <td contenteditable="false" class="editable"> {{ spool.pwht_date }}</td>
+                <td contenteditable="false" class="editable"> {{ spool.hydro_date }}</td>
+            </tr>
             {% endfor %}
-        </tr>
-        {% endfor %}
+        </tbody>
     </table>
 {% endblock %}

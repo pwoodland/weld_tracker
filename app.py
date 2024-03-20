@@ -175,12 +175,13 @@ def welds():
 ### SPOOLS ####
 @app.route('/spools')
 def spools():
-    con = connection()
-    cur = con.cursor()                         
-    cur.execute("SELECT * FROM spools;")
-    spools_data = cur.fetchall()
-    end_con(cur, con)
-    return render_template("spools.html", table_data = spools_data)
+    # con = connection()
+    # cur = con.cursor()                         
+    # cur.execute("SELECT * FROM spools;")
+    # spools_data = cur.fetchall()
+    # end_con(cur, con)
+    spools_data = db.session.execute(db.select(Spools).order_by(Spools.id)).scalars().all()
+    return render_template("spools.html", spools = spools_data)
 
 ### HYDROS ###
 @app.route('/hydros')
@@ -194,7 +195,7 @@ def hydros():
 
 
 ###################################################
-### UPDATE WELDS ASYNC API ENPOINT              ###
+###     UPDATE WELDS ASYNC API ENPOINT          ###
 ###################################################
 @app.route('/welds/edit', methods=["POST"])
 def updateWelds():
