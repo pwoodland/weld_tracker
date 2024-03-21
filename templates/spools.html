@@ -33,6 +33,7 @@
                 <td contenteditable="false" class="editable"> {{ spool.nde_date }}</td>
                 <td contenteditable="false" class="editable"> {{ spool.pwht_date }}</td>
                 <td contenteditable="false" class="editable"> {{ spool.hydro_date }}</td>
+                <td class="delete_button" style="display: none"><button>X</button></td>
             </tr>
             {% endfor %}
         </tbody>
@@ -47,6 +48,7 @@
             <td>{{ new_spool.new_spool_line_spec() }}</td>
             <td>{{ new_spool.new_spool_spool() }}</td>
             <td>{{ new_spool.new_spool_dwg_date() }}</td>
+            <td>{{ new_spool.new_spool_welded_date() }}</td>
             <td>{{ new_spool.new_spool_nde_date() }}</td>
             <td>{{ new_spool.new_spool_pwht_date() }}</td>
             <td>{{ new_spool.new_spool_hydro_date() }}</td>

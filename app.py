@@ -243,7 +243,7 @@ def hydros():
 
 
 ###################################################
-###     UPDATE WELDS ASYNC API ENPOINT          ###
+###     UPDATE WELDS ASYNC API ENDPOINT         ###
 ###################################################
 @app.route('/welds/edit', methods=["POST"])
 def updateWelds():
@@ -271,7 +271,7 @@ def updateWelds():
 
     return jsonify("Post request worked!") # give the front end something
 
-########################################################
+#####################
 ### UPDATE SPOOLS ###
 #####################
 @app.route('/spools/edit', methods=["POST"])
@@ -289,7 +289,7 @@ def updateSpools():
     spool_to_update.line_spec = dicted_data["spec"]
     spool_to_update.spool_number = dicted_data["spool"]
     spool_to_update.dwg_issued_date = dicted_data["dwg_date"]
-    spool_to_update.welded_date = dicted_data["nde_date"]
+    spool_to_update.welded_date = dicted_data["weld_date"]
     spool_to_update.nde_date = dicted_data["nde_date"]
     spool_to_update.pwht_date = dicted_data["pwht_date"]
     spool_to_update.hydro_date = dicted_data["hydro_date"]
@@ -298,6 +298,42 @@ def updateSpools():
     db.session.flush()
 
     return jsonify("Post request worked!")
+
+
+###############################################
+###        DELETE WELDS API ENDPOINT        ###
+###############################################
+@app.route('/welds/delete', methods=["DELETE"])
+def deleteWeld():
+    request_data = request.get_json()                               # get data from server
+    listed_data = request_data.split()                              # split it into a list
+    dicted_data = listToWeld(listed_data)                           # convert to a dict
+    print(dicted_data)
+
+    weld_to_delete = db.session.execute(select(Welds).filter_by(id=dicted_data["id"])).scalar_one()
+    db.session.delete(weld_to_delete)
+    db.session.commit()
+    db.session.flush()
+
+    return jsonify(f"Successfully deleted weld {dicted_data["weld"]} from spool {dicted_data["spool"]}!")
+
+
+###############################################
+###        DELETE SPOOL API ENDPOINT        ###
+###############################################
+@app.route('/spools/delete', methods=["DELETE"])
+def deleteSpool():
+    request_data = request.get_json()                               # get data from server
+    listed_data = request_data.split()                              # split it into a list
+    dicted_data = listToSpool(listed_data)                          # convert to a dict
+    print(dicted_data)
+
+    # spool_to_delete = db.session.execute(select(Spools).filter_by(id=dicted_data["id"])).scalar_one()
+    # db.session.delete(spool_to_delete)
+    # db.session.commit()
+    # db.session.flush()
+    
+    return jsonify(f"Successfully deleted spool {dicted_data["spool"]}!")
 
 # Run development server locally                                              
 if __name__ == '__main__':
