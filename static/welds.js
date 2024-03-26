@@ -113,3 +113,28 @@ const lockButton = document.getElementById('lock');
 lockButton.addEventListener('click', changeLock);
 
 
+// start a filter option
+// create event listener for search box
+const searchBox = document.getElementById('search_box');
+searchBox.addEventListener('keyup', searchTable);
+
+// define search box filter
+function searchTable() {
+    const filters = this.value.toUpperCase().split(" ");            // creating multiple filters if space in search box
+    const tableBody = document.getElementById("welds_data");        // getting the tbody (weld data)
+    const tableRows = tableBody.getElementsByTagName("tr");         // getting all the rows in the tbody
+
+    for (row of tableRows) {
+        const tcells = row.cells;
+        let shouldDisplayRow = false;
+        for (let cell = 1; cell < tcells.length; cell++) {           // ignoring first column cause its just the database id#
+            for (filter of filters) {
+                if ((tcells[cell].innerText.toUpperCase().includes(filter)) || tcells[cell].textContent.toUpperCase().includes(filter)) {
+                    shouldDisplayRow = true;
+                    break;
+                }
+            }
+        }
+        row.style.display = shouldDisplayRow ? "" : "none";
+    }
+}

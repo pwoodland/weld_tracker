@@ -2,7 +2,10 @@
 {% block content %}
     <script src="static/welds.js" defer></script>
     <h1>Welds</h1>
+    <div id="UI">
+    <input type="text" id="search_box" placeholder="Filter by">
     <button id="lock">Unlock data</button>
+    </div>
     <table>
         <thead>
             <tr>
@@ -20,7 +23,7 @@
                 <th>NDE Date</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="welds_data">
             <!-- for loop iterates through first list in table data, rows is not only the index but also a list itself -->
             {% for weld in welds %}                  
             <tr>        
