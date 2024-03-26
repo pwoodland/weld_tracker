@@ -2,7 +2,10 @@
 {% block content %}
     <script src="static/spools.js" defer></script>
     <h1>Spools</h1>
-    <button id="lock">Unlock data</button>
+    <div id="UI">
+        <input type="text" id="search_box" placeholder="Filter by">
+        <button id="lock">Unlock data</button>
+    </div>
     <table>
         <thead>
             <tr>
@@ -19,7 +22,7 @@
                 <th>Hydro Date</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="spools_data">
             {% for spool in spools %}                  
             <tr>
                 <td contenteditable="false" class="editable"> {{ spool.id }}</td>
