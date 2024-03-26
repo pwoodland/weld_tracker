@@ -12,10 +12,6 @@ h1 {
     font-family: "Josefin Sans";
 }
 
-tr:hover {
-    background-color: #bffbc0;
-}
-
 td {
     padding:    3px;
     margin:     0px 3px;

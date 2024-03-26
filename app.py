@@ -18,7 +18,7 @@ from sqlalchemy import select
 
 app = Flask(__name__)                                                                   # create the app Flask object
 app.config["SECRET_KEY"] = "not_so_secret"                                              # something I have to do to protect my app
-
+db.init_app(app)
 #######################
 ### SQLALCHEMY INIT ###
 #######################
@@ -67,6 +67,8 @@ class Hydros(db.Model):
     spool_number = db.Column(db.String(80), db.ForeignKey('spools.spool_number'), index = True, unique = True)
     test_pressure_min = db.Column(db.String(100))
     test_pressure_max = db.Column(db.String(100))
+
+
 
 ###############################################
 ###   some connection managment functions   ###
@@ -331,7 +333,6 @@ def updateWelds():
     request_data = request.get_json()                               # get data from server
     listed_data = request_data.split()                              # split it into a list
     dicted_data = listToWeld(listed_data)                           # convert to a dict
-    print(dicted_data)
 
     weld_to_update = db.session.execute(select(Welds).filter_by(id=dicted_data["id"])).scalar_one()
     weld_to_update.spool_number = dicted_data["spool"]
@@ -360,7 +361,7 @@ def updateSpools():
     request_data = request.get_json()                               # get data from server
     listed_data = request_data.split()                              # split it into a list
     dicted_data = listToSpool(listed_data)                          # convert to a dict
-    print(dicted_data)
+
 
     spool_to_update = db.session.execute(select(Spools).filter_by(id=dicted_data["id"])).scalar_one()
     spool_to_update.line_number = dicted_data["line"]
@@ -388,7 +389,7 @@ def deleteWeld():
     request_data = request.get_json()                               # get data from server
     listed_data = request_data.split()                              # split it into a list
     dicted_data = listToWeld(listed_data)                           # convert to a dict
-    print(dicted_data)
+
 
     weld_to_delete = db.session.execute(select(Welds).filter_by(id=dicted_data["id"])).scalar_one()
     db.session.delete(weld_to_delete)
@@ -406,7 +407,7 @@ def deleteSpool():
     request_data = request.get_json()                               # get data from server
     listed_data = request_data.split()                              # split it into a list
     dicted_data = listToSpool(listed_data)                          # convert to a dict
-    print(dicted_data)
+
 
     spool_to_delete = db.session.execute(select(Spools).filter_by(id=dicted_data["id"])).scalar_one()
     db.session.delete(spool_to_delete)
