@@ -3,8 +3,23 @@
     <script src="static/spools.js" defer></script>
     <h1>Spools</h1>
     <div id="UI">
-        <input type="text" id="search_box" placeholder="Filter by">
+        <input type="text" id="search_box" placeholder="Search">
         <button id="lock">Unlock data</button>
+        <button id="mass_enter">Mass data entry</button>
+        <form method="POST" id="mass_form">
+            {{ csv_spools.hidden_tag() }}
+            <div id="example">
+            {{ csv_spools.spools_text_area(id="mass_text") }}
+                <span id="example_ps">
+                    <p>Enter your data as a CSV: Line #, Drawing, Revision, Spec, Spool</p>
+                    <p>Add as many lines as you want</p>
+                    <p>Check out the example:</p>
+                    <img src="static/images/mass_spools_example.png">
+                </span>
+            </div>
+            {{ csv_spools.submit() }}
+        </form>
+    </div>
     </div>
     <table>
         <thead>
@@ -12,8 +27,8 @@
                 <th>ID</th>
                 <th>Line #</th>
                 <th>Drawing #</th>
-                <th>Revision #</th>
-                <th>Line Spec</th>
+                <th>Rev #</th>
+                <th>Spec</th>
                 <th>Spool</th>
                 <th>Drawing Issued</th>
                 <th>Welded Date</th>

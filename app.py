@@ -1,11 +1,11 @@
-##################################################
-### V0.05 UPDATED WELDS VIEW TO USE SQLALCHEMY ###
-### NEXT UP: UPDATE SPOOLS AND HYDROS TABLE TO USE SQL ALCHEMY
-##################################################
+####################################################
+### V0.08 MASS CSV ENTRY FOR WELDS AND SPOOLS    ###
+### NEXT UP: NOT SURE YET, MABYE SOME STYLING?   ###
+####################################################
 
 from flask import Flask, render_template, request, redirect, url_for, jsonify           # import the Flask class from the flask module
 import psycopg2                                                                         # import psycopg2 - how I connect and interact with postgresql
-from forms import NewWeldForm, NewSpoolForm                                             # import NewWeldForm, NewSpoolForm <-- for testing
+from forms import NewWeldForm, NewSpoolForm, MassWeldForm, MassSpoolForm                               
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import select
@@ -71,7 +71,7 @@ class Hydros(db.Model):
 ###############################################
 ###   some connection managment functions   ###
 ###############################################
-
+# remove once hydros is updated to SQLAlchemy
 def connection():
     return psycopg2.connect(
     database="weld_tracker",    # this is my weld tracker database
@@ -86,7 +86,7 @@ def end_con(cursor, connection):
     connection.close()
 
 ##############################################
-### data processing functions             #### 
+###     data processing functions          ### 
 ##############################################
     
 def checkIfNone(toCheck):
@@ -134,6 +134,67 @@ def listToSpool(listOfStrings):
     }
     return entity
 
+### turning csv mass entry form into list of CSV welds
+def csvToListOfCSV(csv):
+    csv_split = csv.split("\r")
+    csv_list = []
+    for string in csv_split:
+        csv_list.append(string.strip("\n"))
+    return csv_list
+
+### separate list of CSVs
+def splitCSVLists(csv_list):
+    list_of_lists = []
+    for list in csv_list:
+        list_of_lists.append(list.split(","))
+    return list_of_lists
+
+### turn the lists into welds
+def listsToWeldObjs(lists):
+    entities = []
+    for list in lists:
+        entities.append({
+            "spool": list[0].upper(),
+            "weld": list[1].upper(),
+            "size": int(list[2]),
+            "thick": list[3].upper(),
+            "type": list[4].upper()
+        })
+    
+    return entities
+
+def listsToSpoolObjs(lists):
+    entities = []
+    for list in lists:
+        entities.append({
+            "line": list[0].upper(),
+            "drawing": list[1].upper(),
+            "rev": list[2].upper(),
+            "spec": list[3].upper(),
+            "spool": list[4].upper()
+        })
+    return entities
+
+
+### mass welds into database
+def commitMassWelds(welds):
+    for weld in welds:
+        weld_data = Welds(spool_number=weld["spool"], weld_id=weld["weld"], weld_size=weld["size"],
+                          weld_schedule=weld["thick"], weld_type=weld["type"])
+        db.session.add(weld_data)
+        db.session.commit()
+    pass
+
+### mass spools into database
+def commitMassSpools(spools):
+    for spool in spools:
+        spool_data = Spools(line_number=spool["line"], drawing_number=spool["drawing"], revision_number=spool["rev"],
+                            line_spec=spool["spec"], spool_number=spool["spool"])
+        db.session.add(spool_data)
+        db.session.commit()
+    pass
+
+
 ############################################################################################################################################################
 ###############################################
 ###             MAIN ROUTES                 ###
@@ -149,10 +210,19 @@ def index():
 def welds():
     #create an instance of the new weld form
     new_weld_form = NewWeldForm()
-
+    mass_welds_form = MassWeldForm()
     ### gets all the records using Flask-SQLAlchemy
-    welds_data = db.session.execute(db.select(Welds).order_by(Welds.id)).scalars().all()
+    welds_data = db.session.execute(db.select(Welds).order_by(Welds.spool_number, Welds.weld_id)).scalars().all()
 
+    # mass weld form submission
+    if mass_welds_form.validate_on_submit():
+        csv_data = mass_welds_form.welds_text_area.data
+        mass_welds = listsToWeldObjs(splitCSVLists(csvToListOfCSV(csv_data)))
+        commitMassWelds(mass_welds)
+
+        return redirect(url_for('welds'))
+
+    # new weld form submission
     if new_weld_form.validate_on_submit():    
         spool = new_weld_form.new_weld_spool.data.upper()
         weld = new_weld_form.new_weld_weld.data.upper()
@@ -186,14 +256,24 @@ def welds():
 
         return redirect(url_for('welds'))
  
-    return render_template("welds.html", welds = welds_data, new_weld = new_weld_form) # new_weld is template variable to be used in template
+    return render_template("welds.html", welds = welds_data, new_weld = new_weld_form, csv_welds = mass_welds_form) # new_weld is template variable to be used in template
 
 ### SPOOLS ####
 @app.route('/spools', methods=["GET", "POST"])
 def spools():
     new_spool_form = NewSpoolForm()
-    spools_data = db.session.execute(db.select(Spools).order_by(Spools.id)).scalars().all()
+    mass_spools_form = MassSpoolForm()
+    spools_data = db.session.execute(db.select(Spools).order_by(Spools.spool_number)).scalars().all()
 
+    # mass spools form submission
+    if mass_spools_form.validate_on_submit():
+        csv_data = mass_spools_form.spools_text_area.data
+        mass_spools = listsToSpoolObjs(splitCSVLists(csvToListOfCSV(csv_data)))
+        commitMassSpools(mass_spools)
+
+        return redirect(url_for('spools'))
+
+    # new spool form submission
     if new_spool_form.validate_on_submit():
         line_number = new_spool_form.new_spool_line_number.data.upper()
         dwg_number = new_spool_form.new_spool_dwg_number.data.upper()
@@ -229,7 +309,7 @@ def spools():
 
         return redirect(url_for('spools'))
 
-    return render_template("spools.html", spools = spools_data, new_spool = new_spool_form)
+    return render_template("spools.html", spools = spools_data, new_spool = new_spool_form, csv_spools=mass_spools_form)
 
 ### HYDROS ###
 @app.route('/hydros')
@@ -279,7 +359,7 @@ def updateSpools():
 
     request_data = request.get_json()                               # get data from server
     listed_data = request_data.split()                              # split it into a list
-    dicted_data = listToSpool(listed_data)                         # convert to a dict
+    dicted_data = listToSpool(listed_data)                          # convert to a dict
     print(dicted_data)
 
     spool_to_update = db.session.execute(select(Spools).filter_by(id=dicted_data["id"])).scalar_one()
@@ -328,10 +408,10 @@ def deleteSpool():
     dicted_data = listToSpool(listed_data)                          # convert to a dict
     print(dicted_data)
 
-    # spool_to_delete = db.session.execute(select(Spools).filter_by(id=dicted_data["id"])).scalar_one()
-    # db.session.delete(spool_to_delete)
-    # db.session.commit()
-    # db.session.flush()
+    spool_to_delete = db.session.execute(select(Spools).filter_by(id=dicted_data["id"])).scalar_one()
+    db.session.delete(spool_to_delete)
+    db.session.commit()
+    db.session.flush()
     
     return jsonify(f"Successfully deleted spool {dicted_data["spool"]}!")
 

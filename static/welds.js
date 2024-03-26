@@ -72,7 +72,7 @@ async function deleteData() {
         if (response.ok) {
             const jsonResponse = await response.json();
             console.log(jsonResponse);
-            this.parentNode.style.display = "none";
+            this.parentNode.remove();
         }
     } catch (error) {
         console.log(error);
@@ -136,5 +136,21 @@ function searchTable() {
             }
         }
         row.style.display = shouldDisplayRow ? "" : "none";
+    }
+}
+
+// show/hide mass entry form
+const massEntryButton = document.getElementById("mass_enter");
+massEntryButton.addEventListener('click', showHide);
+
+function showHide() {
+    if (massEntryButton.innerHTML == "Mass data entry") {
+        massEntryButton.innerHTML = "Hide mass entry";
+        document.getElementById("mass_form").style.display = "block";
+    } else if (massEntryButton.innerHTML == "Hide mass entry") {
+        massEntryButton.innerHTML = "Mass data entry";
+        document.getElementById("mass_form").style.display = "none";
+    } else {
+        console.log("Something went wrong");
     }
 }

@@ -34,6 +34,7 @@ table {
 
 th {
     padding: 1px 2px;
+    max-width: 120px;
 }
 
 ul {
@@ -47,4 +48,22 @@ ul {
 #UI {
     text-align:  left;
     margin:    5px 100px;
+}
+
+#mass_form {
+    display: none;
+    margin: 5px;
+}
+#mass_text {
+    min-width: 300px;
+    min-height: 100px;
+    margin-right: 5px;
+}
+
+#example {
+    display:    flex; 
+}
+
+#example_ps {
+    font-size: smaller;
 }

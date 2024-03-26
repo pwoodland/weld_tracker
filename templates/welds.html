@@ -3,8 +3,22 @@
     <script src="static/welds.js" defer></script>
     <h1>Welds</h1>
     <div id="UI">
-    <input type="text" id="search_box" placeholder="Filter by">
-    <button id="lock">Unlock data</button>
+        <input type="text" id="search_box" placeholder="Search">
+        <button id="lock">Unlock data</button>
+        <button id="mass_enter">Mass data entry</button>
+        <form method="POST" id="mass_form">
+            {{ csv_welds.hidden_tag() }}
+            <div id="example">
+            {{ csv_welds.welds_text_area(id="mass_welds_text") }}
+                <span id="example_ps">
+                    <p>Enter your data as a CSV: Spool, Weld, Size, Thick, Type</p>
+                    <p>Add as many lines as you want</p>
+                    <p>Check out the example:</p>
+                    <img src="static/images/mass_welds_example.png">
+                </span>
+            </div>
+            {{ csv_welds.submit() }}
+        </form>
     </div>
     <table>
         <thead>

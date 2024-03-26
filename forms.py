@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import SubmitField, StringField, DateField, IntegerField
+from wtforms import SubmitField, StringField, DateField, IntegerField, TextAreaField
 from wtforms.validators import DataRequired, Length, Optional
 
 class NewWeldForm(FlaskForm):
@@ -29,4 +29,12 @@ class NewSpoolForm(FlaskForm):
     new_spool_pwht_date = DateField("pwht_date", validators=[Optional()])
     new_spool_hydro_date = DateField("hydro_date", validators=[Optional()])
 
+    submit = SubmitField("Submit spool")
+
+class MassWeldForm(FlaskForm):
+    welds_text_area = TextAreaField("welds_csv", validators=[DataRequired()])
+    submit = SubmitField("Submit welds")
+
+class MassSpoolForm(FlaskForm):
+    spools_text_area = TextAreaField("spools_csv", validators=[DataRequired()])
     submit = SubmitField("Submit spool")
