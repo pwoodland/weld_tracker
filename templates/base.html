@@ -7,10 +7,15 @@
         <h1>Weld Tracker Version: 0.09</h1>
         <p>Adding accounts</p>
         {% if current_user.is_authenticated %}
-            <p>Welcome {{ current_user.name }}</p>
+            <p>Welcome {{ current_user.first_name.title() }}</p>        
         {% endif %}
         {% block content %}
         {% endblock %}
         <a href="/">Back home</a>
+        {% if current_user.is_anonymous %}
+        <a href="/login">Login</a>
+        {% else %}
+        <a href="/logout">Logout</a>
+        {% endif %}
     </body>
 </html>

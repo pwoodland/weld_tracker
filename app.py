@@ -10,7 +10,8 @@ from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import select
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import LoginManager, UserMixin, login_user
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+from urllib.parse import urlsplit
 
 
 ###############################################
@@ -111,11 +112,13 @@ def end_con(cursor, connection):
 ##############################################
 ### LOGIN MANAGER STUFF                    ###
 ##############################################
+    
+login_manager.login_view = 'login'
 
 @login_manager.user_loader
 def load_user(user_id):
-    print(db.session.get(Users, user_id))
-    return db.session.get(Users, user_id)    ##### dont think this is quite right
+    print(db.session.get(Users, int(user_id)))
+    return db.session.get(Users, int(user_id))    ##### dont think this is quite right
 
 
 ##############################################
@@ -255,32 +258,45 @@ def register():
         db.session.add(new_user)
         db.session.commit()
 
-
     return render_template("register.html", registration=register_form)
 
-
+### LOGIN ###
 @app.route('/login', methods=["GET", "POST"])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    
     login_form = LoginForm()
-
     if login_form.validate_on_submit():
-        user = db.session.execute(db.select(Users).filter_by(email=login_form.email.data.upper())).scalar_one()
+        user = db.session.scalar(db.select(Users).where(Users.email==login_form.email.data.upper()))
         print(type(user))
         if user and user.check_password(login_form.password.data):
-            login_user(user)
-            print("Password successful!")
-            return redirect(url_for('index'))
+            login_user(user, login_form.remember.data)
+            next_page = request.args.get('next')
+            if not next_page or urlsplit(next_page).netloc != '':
+                next_page = url_for('index')
+            return redirect(next_page)
+        else:
+            return render_template("cant_find.html")
+
 
     return render_template("login.html", login_form=login_form)
 
+### LOGOUT ###
+@app.route('/logout', methods=["GET"])
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
 
 ### INDEX ###    
-@app.route('/', methods=["GET", "POST"])                                                                         # main route for the home page
+@app.route('/', methods=["GET", "POST"]) 
+@login_required                                                                         # main route for the home page
 def index():
     return render_template("index.html")
 
 ### WELDS ###
 @app.route('/welds', methods=["GET", "POST"])                                           # adding the post method to be able to send data back to server
+@login_required  
 def welds():
     #create an instance of the new weld form
     new_weld_form = NewWeldForm()
@@ -334,6 +350,7 @@ def welds():
 
 ### SPOOLS ####
 @app.route('/spools', methods=["GET", "POST"])
+@login_required  
 def spools():
     new_spool_form = NewSpoolForm()
     mass_spools_form = MassSpoolForm()
@@ -387,6 +404,7 @@ def spools():
 
 ### HYDROS ###
 @app.route('/hydros')
+@login_required  
 def hydros():
     con = connection()
     cur = con.cursor()
