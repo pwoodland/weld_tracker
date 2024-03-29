@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>Sign up:</h2>
+    <div id="register_form">
+        <form method="POST">
+            {{ registration.hidden_tag() }}
+            <p>First name: {{ registration.first_name() }}</p>
+            <p>Last name: {{ registration.last_name() }}</p>
+            <p>Email:{{ registration.email() }}</p>
+            <p>Username: {{ registration.username() }}</p>
+            <p>Password: {{ registration.password() }}</p>
+            <p>Confirm password: {{ registration.password2() }}</p>
+            {{ registration.submit() }}
+        </form>
+    </div>
+{% endblock %}

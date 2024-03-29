@@ -63,3 +63,11 @@ ul {
 #example_ps {
     font-size: smaller;
 }
+
+#register_form {
+    max-width: 500px;
+    margin: auto;
+}
+#register_form > input {
+    align: right;
+}

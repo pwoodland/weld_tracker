@@ -4,8 +4,11 @@
         <link rel="stylesheet" href="/static/main_css.css">
     </head>
     <body>
-        <h1>Weld Tracker Version: 0.08</h1>
-        <p>Mass entry</p>
+        <h1>Weld Tracker Version: 0.09</h1>
+        <p>Adding accounts</p>
+        {% if current_user.is_authenticated %}
+            <p>Welcome {{ current_user.name }}</p>
+        {% endif %}
         {% block content %}
         {% endblock %}
         <a href="/">Back home</a>

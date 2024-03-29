@@ -1,14 +1,16 @@
 ####################################################
 ### V0.08 MASS CSV ENTRY FOR WELDS AND SPOOLS    ###
-### NEXT UP: NOT SURE YET, MABYE SOME STYLING?   ###
+### NEXT UP: USER ACCOUNTS                       ###
 ####################################################
 
 from flask import Flask, render_template, request, redirect, url_for, jsonify           # import the Flask class from the flask module
 import psycopg2                                                                         # import psycopg2 - how I connect and interact with postgresql
-from forms import NewWeldForm, NewSpoolForm, MassWeldForm, MassSpoolForm                               
+from forms import NewWeldForm, NewSpoolForm, MassWeldForm, MassSpoolForm, SignUpForm, LoginForm                               
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import select
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import LoginManager, UserMixin, login_user
 
 
 ###############################################
@@ -18,7 +20,10 @@ from sqlalchemy import select
 
 app = Flask(__name__)                                                                   # create the app Flask object
 app.config["SECRET_KEY"] = "not_so_secret"                                              # something I have to do to protect my app
-db.init_app(app)
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+
 #######################
 ### SQLALCHEMY INIT ###
 #######################
@@ -28,6 +33,22 @@ db = SQLAlchemy(app)
 ###############################################
 ###           DATABASE MODELS               ###
 ###############################################
+
+class Users(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key = True)
+    first_name = db.Column(db.String(80), index = True, unique = False)
+    last_name = db.Column(db.String(100), index = True, unique = False)
+    username = db.Column(db.String(80), index = True, unique = True)
+    email = db.Column(db.String(100), index = True, unique = True)
+    password_hash = db.Column(db.String(256))
+    joined_date = db.Column(db.DateTime(), index=True, default = datetime.today())
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+    
 
 class Spools(db.Model):                                                                                        
     id = db.Column(db.Integer, primary_key = True)                                                              
@@ -71,7 +92,7 @@ class Hydros(db.Model):
 
 
 ###############################################
-###   some connection managment functions   ###
+###   some connection management functions  ###
 ###############################################
 # remove once hydros is updated to SQLAlchemy
 def connection():
@@ -88,9 +109,19 @@ def end_con(cursor, connection):
     connection.close()
 
 ##############################################
+### LOGIN MANAGER STUFF                    ###
+##############################################
+
+@login_manager.user_loader
+def load_user(user_id):
+    print(db.session.get(Users, user_id))
+    return db.session.get(Users, user_id)    ##### dont think this is quite right
+
+
+##############################################
 ###     data processing functions          ### 
 ##############################################
-    
+
 def checkIfNone(toCheck):
     if toCheck == "None" or toCheck == "none":
         return None
@@ -201,6 +232,47 @@ def commitMassSpools(spools):
 ###############################################
 ###             MAIN ROUTES                 ###
 ###############################################
+
+#########################
+### ACCOUNTS AND AUTH ###
+#########################
+
+### REGISTER ###
+@app.route('/register', methods=["GET", "POST"])
+def register():
+    register_form = SignUpForm()
+
+    if register_form.validate_on_submit():
+        # dont forget to hash the password before storing
+        username = register_form.username.data.upper()
+        email = register_form.email.data.upper()
+        first_name = register_form.first_name.data.upper()
+        last_name = register_form.last_name.data.upper()
+        password = register_form.password.data
+
+        new_user = Users(first_name=first_name, last_name=last_name, username=username, email=email)
+        new_user.set_password(password)
+        db.session.add(new_user)
+        db.session.commit()
+
+
+    return render_template("register.html", registration=register_form)
+
+
+@app.route('/login', methods=["GET", "POST"])
+def login():
+    login_form = LoginForm()
+
+    if login_form.validate_on_submit():
+        user = db.session.execute(db.select(Users).filter_by(email=login_form.email.data.upper())).scalar_one()
+        print(type(user))
+        if user and user.check_password(login_form.password.data):
+            login_user(user)
+            print("Password successful!")
+            return redirect(url_for('index'))
+
+    return render_template("login.html", login_form=login_form)
+
 
 ### INDEX ###    
 @app.route('/', methods=["GET", "POST"])                                                                         # main route for the home page

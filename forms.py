@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import SubmitField, StringField, DateField, IntegerField, TextAreaField
-from wtforms.validators import DataRequired, Length, Optional
+from wtforms import SubmitField, StringField, DateField, IntegerField, TextAreaField, PasswordField, BooleanField
+from wtforms.validators import DataRequired, Length, Optional, EqualTo, Email
 
 class NewWeldForm(FlaskForm):
     new_weld_spool = StringField("spool", validators=[DataRequired(), Length(max = 20)])
@@ -38,3 +38,18 @@ class MassWeldForm(FlaskForm):
 class MassSpoolForm(FlaskForm):
     spools_text_area = TextAreaField("spools_csv", validators=[DataRequired()])
     submit = SubmitField("Submit spool")
+
+class SignUpForm(FlaskForm):
+    username = StringField("username", validators=[DataRequired()])
+    email = StringField("email", validators=[DataRequired(), Email()])
+    first_name = StringField("first_name", validators=[DataRequired()])
+    last_name = StringField("last_name", validators=[DataRequired()])
+    password = PasswordField("password", validators=[DataRequired()])
+    password2 = PasswordField("repeat_password", validators=[DataRequired(), EqualTo('password')])
+    submit = SubmitField("Register")
+
+class LoginForm(FlaskForm):
+    email = StringField("Email", validators=[DataRequired(), Email()])
+    password = PasswordField("Password", validators=[DataRequired()])
+    remember = BooleanField("Remember me")
+    login = SubmitField("Login")
